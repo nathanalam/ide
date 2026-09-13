@@ -7,18 +7,29 @@ if [[ "${CI_BUILD}" == "no" ]]; then
   exit 1
 fi
 
+# include common functions
+. ./utils.sh
+
 tar -xzf ./vscode.tar.gz
 
 cd vscode || { echo "'vscode' dir not found"; exit 1; }
 
+# `@vscodium/native-keymap` rejects its own prebuilt binary on Windows (see
+# `fix_native_keymap_checksums`), so hold the install scripts back until its
+# checksum manifest has been fixed.
 for i in {1..5}; do # try 5 times
-  npm ci && break
+  npm ci --ignore-scripts && break
   if [[ $i == 5 ]]; then
     echo "Npm install failed too many times" >&2
     exit 1
   fi
   echo "Npm install failed $i, trying again..."
 done
+
+fix_native_keymap_checksums
+
+npm rebuild
+npm run postinstall
 
 node build/azure-pipelines/distro/mixin-npm.ts
 

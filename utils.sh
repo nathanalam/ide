@@ -105,6 +105,19 @@ apply_patch() {
   mv -f $1{.bak,}
 }
 
+# `@vscodium/native-keymap` lists its win32 prebuilt binaries in binary mode
+# (`sha256sum -b`, so the file name is prefixed with `*`), while its installer
+# only matches plain entries. It then discards the prebuilt binary and falls
+# back to a source build, which fails against the Electron headers.
+fix_native_keymap_checksums() {
+  local CHECKSUM_FILE="node_modules/@vscodium/native-keymap/checksum.txt"
+
+  if [[ -f "${CHECKSUM_FILE}" ]]; then
+    echo "fixing the checksums of '@vscodium/native-keymap'"
+    replace "s| \*native-keymap| native-keymap|" "${CHECKSUM_FILE}"
+  fi
+}
+
 exists() { type -t "$1" &> /dev/null; }
 
 is_gnu_sed() {

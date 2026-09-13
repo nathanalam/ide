@@ -227,11 +227,20 @@ if command -v flock >/dev/null 2>&1; then
   flock 9
 fi
 
+# On Windows, `@vscodium/native-keymap` rejects its own prebuilt binary (see
+# `fix_native_keymap_checksums`), so hold the install scripts back until its
+# checksum manifest has been fixed.
+NPM_CI_ARGS=()
+
+if [[ "${OS_NAME}" == "windows" ]]; then
+  NPM_CI_ARGS+=( "--ignore-scripts" )
+fi
+
 for i in {1..5}; do # try 5 times
   if [[ "${CI_BUILD}" != "no" && "${OS_NAME}" == "osx" ]]; then
-    CXX=clang++ npm ci && break
+    CXX=clang++ npm ci "${NPM_CI_ARGS[@]}" && break
   else
-    npm ci && break
+    npm ci "${NPM_CI_ARGS[@]}" && break
   fi
 
   if [[ $i == 5 ]]; then
@@ -242,6 +251,13 @@ for i in {1..5}; do # try 5 times
 
   sleep $(( 15 * (i + 1)))
 done
+
+if [[ "${OS_NAME}" == "windows" ]]; then
+  fix_native_keymap_checksums
+
+  npm rebuild
+  npm run postinstall
+fi
 
 mv .npmrc.bak .npmrc
 # }}}
