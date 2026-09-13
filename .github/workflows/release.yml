@@ -1,0 +1,115 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Version of the release (default: <vscode tag> + hours elapsed this year)"
+        type: string
+        required: false
+      linux:
+        description: Build Linux (x64, arm64)
+        type: boolean
+        default: true
+      macos:
+        description: Build macOS (x64, arm64)
+        type: boolean
+        default: true
+      windows:
+        description: Build Windows (x64, arm64)
+        type: boolean
+        default: true
+
+env:
+  APP_NAME: Rush
+  ASSETS_REPOSITORY: ${{ github.repository }}
+  BINARY_NAME: rush
+  GH_REPO_PATH: ${{ github.repository }}
+  ORG_NAME: Rush Automations
+  VSCODE_QUALITY: stable
+
+permissions: {}
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    permissions: {}
+    outputs:
+      MS_COMMIT: ${{ env.MS_COMMIT }}
+      MS_TAG: ${{ env.MS_TAG }}
+      RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Resolve release version
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version }}
+        run: ./release_version.sh
+
+  # create the (empty) GitHub release up front, so that the per-platform jobs
+  # only ever have to upload their assets to it
+  create_release:
+    needs:
+      - version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      MS_COMMIT: ${{ needs.version.outputs.MS_COMMIT }}
+      MS_TAG: ${{ needs.version.outputs.MS_TAG }}
+      RELEASE_VERSION: ${{ needs.version.outputs.RELEASE_VERSION }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: mkdir -p assets && ./release.sh
+
+      - name: Summary
+        env:
+          RELEASE_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ needs.version.outputs.RELEASE_VERSION }}
+        run: echo "Release [${RELEASE_VERSION}](${RELEASE_URL})" >> "${GITHUB_STEP_SUMMARY}"
+
+  linux:
+    needs:
+      - version
+      - create_release
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release-linux.yml
+    with:
+      release_version: ${{ needs.version.outputs.RELEASE_VERSION }}
+    if: inputs.linux
+
+  macos:
+    needs:
+      - version
+      - create_release
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release-macos.yml
+    with:
+      release_version: ${{ needs.version.outputs.RELEASE_VERSION }}
+    if: inputs.macos
+
+  windows:
+    needs:
+      - version
+      - create_release
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release-windows.yml
+    with:
+      release_version: ${{ needs.version.outputs.RELEASE_VERSION }}
+    if: inputs.windows

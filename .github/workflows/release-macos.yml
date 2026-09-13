@@ -1,0 +1,104 @@
+name: Release - macOS
+
+on:
+  workflow_call:
+    inputs:
+      release_version:
+        description: Version of the release to build and upload to
+        type: string
+        required: false
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Version of the release (default: <vscode tag> + hours elapsed this year)"
+        type: string
+        required: false
+
+env:
+  APP_NAME: Rush
+  ASSETS_REPOSITORY: ${{ github.repository }}
+  BINARY_NAME: rush
+  # no version feed is published for this fork, so don't let the app self-update
+  DISABLE_UPDATE: 'yes'
+  GH_REPO_PATH: ${{ github.repository }}
+  MAX_OLD_SPACE_SIZE: 12288
+  ORG_NAME: Rush Automations
+  OS_NAME: osx
+  SHOULD_BUILD: 'yes'
+  SHOULD_BUILD_CLI: 'no'
+  SHOULD_BUILD_REH: 'no'
+  SHOULD_BUILD_REH_WEB: 'no'
+  VSCODE_QUALITY: stable
+
+permissions: {}
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    permissions: {}
+    outputs:
+      MS_COMMIT: ${{ env.MS_COMMIT }}
+      MS_TAG: ${{ env.MS_TAG }}
+      RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Resolve release version
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version }}
+        run: ./release_version.sh
+
+  build:
+    needs:
+      - version
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15-intel
+            vscode_arch: x64
+          - runner: macos-14
+            vscode_arch: arm64
+    env:
+      MS_COMMIT: ${{ needs.version.outputs.MS_COMMIT }}
+      MS_TAG: ${{ needs.version.outputs.MS_TAG }}
+      RELEASE_VERSION: ${{ needs.version.outputs.RELEASE_VERSION }}
+      VSCODE_ARCH: ${{ matrix.vscode_arch }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Setup Python 3
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+        if: env.VSCODE_ARCH == 'x64'
+
+      - name: Clone VSCode repo
+        run: ./get_repo.sh
+
+      - name: Build
+        run: ./build.sh
+
+      # unsigned: `prepare_assets.sh` only produces a DMG when a certificate is
+      # configured, so the ZIP of the .app bundle is the macOS download
+      - name: Prepare assets
+        run: ./prepare_assets.sh
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./release.sh
