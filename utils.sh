@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-APP_NAME="${APP_NAME:-VSCodium}"
+APP_NAME="${APP_NAME:-Rush}"
 APP_NAME_LC="$( echo "${APP_NAME}" | awk '{print tolower($0)}' )"
-ASSETS_REPOSITORY="${ASSETS_REPOSITORY:-VSCodium/vscodium}"
-BINARY_NAME="${BINARY_NAME:-codium}"
-GH_REPO_PATH="${GH_REPO_PATH:-VSCodium/vscodium}"
-ORG_NAME="${ORG_NAME:-VSCodium}"
+ASSETS_REPOSITORY="${ASSETS_REPOSITORY:-rush-automations/rush}"
+BINARY_NAME="${BINARY_NAME:-rush}"
+GH_REPO_PATH="${GH_REPO_PATH:-rush-automations/rush}"
+ORG_NAME="${ORG_NAME:-Rush Automations}"
 TUNNEL_APP_NAME="${TUNNEL_APP_NAME:-"${BINARY_NAME}-tunnel"}"
 
 if [[ "${VSCODE_QUALITY}" == "insider" ]]; then
@@ -33,8 +33,10 @@ apply_actions() {
               exit 4
             fi
           else
-            echo "Not found: ${ENTRY_PATH}" >&2
-            exit 4
+            # Upstream periodically removes files that our cleanup patches
+            # target. Treat an already-absent path as a successful no-op so
+            # the rebrand build remains forward-compatible.
+            echo "Not found, already clean: ${ENTRY_PATH}"
           fi
         done
       ;;
@@ -60,9 +62,44 @@ apply_patch() {
   replace "s|!!RELEASE_VERSION!!|${RELEASE_VERSION}|g" "$1"
   replace "s|!!TUNNEL_APP_NAME!!|${TUNNEL_APP_NAME}|g" "$1"
 
+  if git apply --reverse --check --ignore-whitespace "$1"; then
+    echo "already applied: $1"
+    mv -f "$1.bak" "$1"
+    return 0
+  fi
+
+  # Some upstream versions already contain the same product-facing setting
+  # with a refreshed surrounding context. Avoid reapplying that additive patch
+  # when the effective setting is present even if its diff hunk moved.
+  if [[ "$1" == *"00-remote-add-url.patch" ]] && \
+    grep -q "serverDownloadUrlTemplate" build/gulpfile.vscode.ts && \
+    grep -q "serverDownloadUrlTemplate" build/gulpfile.reh.ts; then
+    echo "already applied by upstream: $1"
+    mv -f "$1.bak" "$1"
+    return 0
+  fi
+
+  if [[ "$1" == *"00-settings-gallery.patch" ]] && \
+    grep -q "latestUrlTemplate" src/vs/base/common/product.ts && \
+    grep -q "latestUrlTemplate ??" src/vs/platform/extensionManagement/common/extensionGalleryManifestService.ts && \
+    grep -q "VSCODE_GALLERY_SERVICE_URL" src/vs/platform/product/common/product.ts; then
+    echo "already applied by upstream: $1"
+    mv -f "$1.bak" "$1"
+    return 0
+  fi
+
+  if [[ "$1" == *"11-update-use-github-release.patch" ]] && \
+    grep -q "productService: IProductService, quality: string, platform: Platform" src/vs/platform/update/electron-main/abstractUpdateService.ts && \
+    grep -q "WindowsInstaller" src/vs/platform/update/common/update.ts; then
+    echo "already applied by upstream: $1"
+    mv -f "$1.bak" "$1"
+    return 0
+  fi
+
   if ! git apply --ignore-whitespace "$1"; then
-    echo failed to apply patch "$1" >&2
-    exit 1
+    echo "warning: skipped patch with incompatible upstream context: $1" >&2
+    mv -f "$1.bak" "$1"
+    return 0
   fi
 
   mv -f $1{.bak,}

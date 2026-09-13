@@ -1,8 +1,8 @@
-<div id="vscodium-logo" align="center">
+<div id="rush-logo" align="center">
    <br />
-   <img src="./icons/stable/codium_cnl.svg" alt="VSCodium Logo" width="200"/>
-   <h1>VSCodium</h1>
-   <h3>Free/Libre Open Source Software Binaries of Visual Studio Code</h3>
+   <img src="./icons/rush.svg" alt="Rush Logo" width="200"/>
+   <h1>Rush</h1>
+   <h3>A fast, focused, automation-ready development environment</h3>
 </div>
 
 <div id="badges" align="center">
@@ -125,6 +125,16 @@ flatpak run com.vscodium.codium
 ## <a id="build"></a>Build
 
 Build instructions can be found [here](https://github.com/VSCodium/vscodium/blob/master/docs/howto-build.md)
+
+### Local Linux deployment
+
+On Linux, `deploy.sh` handles the complete Rush deployment: it prepares dependencies, builds the bundle, creates a portable tarball, and installs it under `~/.local/opt` with a `rush` CLI command and desktop launcher:
+
+```bash
+./deploy.sh
+```
+
+If `appimagetool` is available, an AppImage is also created in `dist/`; otherwise the portable `.tar.gz` package is used.
 
 ## <a id="why"></a>Why Does This Exist
 

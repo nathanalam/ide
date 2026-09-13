@@ -65,58 +65,58 @@ if [[ "${DISABLE_UPDATE}" != "yes" ]]; then
 fi
 
 if [[ "${VSCODE_QUALITY}" == "insider" ]]; then
-  setpath "product" "nameShort" "VSCodium - Insiders"
-  setpath "product" "nameLong" "VSCodium - Insiders"
-  setpath "product" "applicationName" "codium-insiders"
-  setpath "product" "dataFolderName" ".vscodium-insiders"
-  setpath "product" "linuxIconName" "vscodium-insiders"
+  setpath "product" "nameShort" "Rush - Insiders"
+  setpath "product" "nameLong" "Rush - Insiders"
+  setpath "product" "applicationName" "rush-insiders"
+  setpath "product" "dataFolderName" ".rush-insiders"
+  setpath "product" "linuxIconName" "rush-insiders"
   setpath "product" "quality" "insider"
-  setpath "product" "urlProtocol" "vscodium-insiders"
-  setpath "product" "serverApplicationName" "codium-server-insiders"
-  setpath "product" "serverDataFolderName" ".vscodium-server-insiders"
-  setpath "product" "darwinBundleIdentifier" "com.vscodium.VSCodiumInsiders"
-  setpath "product" "win32AppUserModelId" "VSCodium.VSCodiumInsiders"
-  setpath "product" "win32DirName" "VSCodium Insiders"
-  setpath "product" "win32MutexName" "vscodiuminsiders"
-  setpath "product" "win32NameVersion" "VSCodium Insiders"
-  setpath "product" "win32RegValueName" "VSCodiumInsiders"
-  setpath "product" "win32ShellNameShort" "VSCodium Insiders"
+  setpath "product" "urlProtocol" "rush-insiders"
+  setpath "product" "serverApplicationName" "rush-server-insiders"
+  setpath "product" "serverDataFolderName" ".rush-server-insiders"
+  setpath "product" "darwinBundleIdentifier" "com.rushautomations.RushInsiders"
+  setpath "product" "win32AppUserModelId" "RushAutomations.RushInsiders"
+  setpath "product" "win32DirName" "Rush Insiders"
+  setpath "product" "win32MutexName" "rushinsiders"
+  setpath "product" "win32NameVersion" "Rush Insiders"
+  setpath "product" "win32RegValueName" "RushInsiders"
+  setpath "product" "win32ShellNameShort" "Rush Insiders"
   setpath "product" "win32AppId" "{{EF35BB36-FA7E-4BB9-B7DA-D1E09F2DA9C9}"
   setpath "product" "win32x64AppId" "{{B2E0DDB2-120E-4D34-9F7E-8C688FF839A2}"
   setpath "product" "win32arm64AppId" "{{44721278-64C6-4513-BC45-D48E07830599}"
   setpath "product" "win32UserAppId" "{{ED2E5618-3E7E-4888-BF3C-A6CCC84F586F}"
   setpath "product" "win32x64UserAppId" "{{20F79D0D-A9AC-4220-9A81-CE675FFB6B41}"
   setpath "product" "win32arm64UserAppId" "{{2E362F92-14EA-455A-9ABD-3E656BBBFE71}"
-  setpath "product" "tunnelApplicationName" "codium-insiders-tunnel"
-  setpath "product" "win32TunnelServiceMutex" "vscodiuminsiders-tunnelservice"
-  setpath "product" "win32TunnelMutex" "vscodiuminsiders-tunnel"
+  setpath "product" "tunnelApplicationName" "rush-insiders-tunnel"
+  setpath "product" "win32TunnelServiceMutex" "rushinsiders-tunnelservice"
+  setpath "product" "win32TunnelMutex" "rushinsiders-tunnel"
   setpath "product" "win32ContextMenu.x64.clsid" "90AAD229-85FD-43A3-B82D-8598A88829CF"
   setpath "product" "win32ContextMenu.arm64.clsid" "7544C31C-BDBF-4DDF-B15E-F73A46D6723D"
 else
-  setpath "product" "nameShort" "VSCodium"
-  setpath "product" "nameLong" "VSCodium"
-  setpath "product" "applicationName" "codium"
-  setpath "product" "linuxIconName" "vscodium"
+  setpath "product" "nameShort" "Rush"
+  setpath "product" "nameLong" "Rush"
+  setpath "product" "applicationName" "rush"
+  setpath "product" "linuxIconName" "rush"
   setpath "product" "quality" "stable"
-  setpath "product" "urlProtocol" "vscodium"
-  setpath "product" "serverApplicationName" "codium-server"
-  setpath "product" "serverDataFolderName" ".vscodium-server"
-  setpath "product" "darwinBundleIdentifier" "com.vscodium"
-  setpath "product" "win32AppUserModelId" "VSCodium.VSCodium"
-  setpath "product" "win32DirName" "VSCodium"
-  setpath "product" "win32MutexName" "vscodium"
-  setpath "product" "win32NameVersion" "VSCodium"
-  setpath "product" "win32RegValueName" "VSCodium"
-  setpath "product" "win32ShellNameShort" "VSCodium"
+  setpath "product" "urlProtocol" "rush"
+  setpath "product" "serverApplicationName" "rush-server"
+  setpath "product" "serverDataFolderName" ".rush-server"
+  setpath "product" "darwinBundleIdentifier" "com.rushautomations.Rush"
+  setpath "product" "win32AppUserModelId" "RushAutomations.Rush"
+  setpath "product" "win32DirName" "Rush"
+  setpath "product" "win32MutexName" "rush"
+  setpath "product" "win32NameVersion" "Rush"
+  setpath "product" "win32RegValueName" "Rush"
+  setpath "product" "win32ShellNameShort" "Rush"
   setpath "product" "win32AppId" "{{763CBF88-25C6-4B10-952F-326AE657F16B}"
   setpath "product" "win32x64AppId" "{{88DA3577-054F-4CA1-8122-7D820494CFFB}"
   setpath "product" "win32arm64AppId" "{{67DEE444-3D04-4258-B92A-BC1F0FF2CAE4}"
   setpath "product" "win32UserAppId" "{{0FD05EB4-651E-4E78-A062-515204B47A3A}"
   setpath "product" "win32x64UserAppId" "{{2E1F05D1-C245-4562-81EE-28188DB6FD17}"
   setpath "product" "win32arm64UserAppId" "{{57FD70A5-1B8D-4875-9F40-C5553F094828}"
-  setpath "product" "tunnelApplicationName" "codium-tunnel"
-  setpath "product" "win32TunnelServiceMutex" "vscodium-tunnelservice"
-  setpath "product" "win32TunnelMutex" "vscodium-tunnel"
+  setpath "product" "tunnelApplicationName" "rush-tunnel"
+  setpath "product" "win32TunnelServiceMutex" "rush-tunnelservice"
+  setpath "product" "win32TunnelMutex" "rush-tunnel"
   setpath "product" "win32ContextMenu.x64.clsid" "D910D5E6-B277-4F4A-BDC5-759A34EEE25D"
   setpath "product" "win32ContextMenu.arm64.clsid" "4852FC55-4A84-4EA1-9C86-D53BE3DF83C0"
 fi
@@ -209,6 +209,24 @@ node build/npm/preinstall.ts
 mv .npmrc .npmrc.bak
 cp ../npmrc .npmrc
 
+# Keep the upstream Electron and Node build metadata while applying our
+# repository-specific npm settings. These values change with every upstream
+# release and are required by the packaging scripts.
+for key in target ms_build_id runtime ignore-scripts; do
+  value=$( sed -n "s/^${key}=//p" .npmrc.bak | head -n 1 )
+  if [[ -n "${value}" ]]; then
+    echo "${key}=${value}" >> .npmrc
+  fi
+done
+
+# Prevent two local deploys from running npm ci against the same generated
+# checkout at once. Concurrent npm cleanup is a common source of ENOENT and
+# ENOTEMPTY failures in native modules.
+if command -v flock >/dev/null 2>&1; then
+  exec 9>"${TMPDIR:-/tmp}/rush-vscode-npm-${UID}.lock"
+  flock 9
+fi
+
 for i in {1..5}; do # try 5 times
   if [[ "${CI_BUILD}" != "no" && "${OS_NAME}" == "osx" ]]; then
     CXX=clang++ npm ci && break
@@ -233,17 +251,17 @@ cp package.json{,.bak}
 
 setpath "package" "version" "${RELEASE_VERSION%-insider}"
 
-replace 's|Microsoft Corporation|VSCodium|' package.json
+replace 's|Microsoft Corporation|Rush Automations|' package.json
 replace "s|--max-old-space-size=8192|--max-old-space-size=${MAX_OLD_SPACE_SIZE}|" package.json
 
 cp resources/server/manifest.json{,.bak}
 
 if [[ "${VSCODE_QUALITY}" == "insider" ]]; then
-  setpath "resources/server/manifest" "name" "VSCodium - Insiders"
-  setpath "resources/server/manifest" "short_name" "VSCodium - Insiders"
+  setpath "resources/server/manifest" "name" "Rush - Insiders"
+  setpath "resources/server/manifest" "short_name" "Rush - Insiders"
 else
-  setpath "resources/server/manifest" "name" "VSCodium"
-  setpath "resources/server/manifest" "short_name" "VSCodium"
+  setpath "resources/server/manifest" "name" "Rush"
+  setpath "resources/server/manifest" "short_name" "Rush"
 fi
 
 # announcements
@@ -251,8 +269,8 @@ replace "s|\\[\\/\\* BUILTIN_ANNOUNCEMENTS \\*\\/\\]|$( tr -d '\n' < ../announce
 
 ../undo_telemetry.sh
 
-replace 's|Microsoft Corporation|VSCodium|' build/lib/electron.ts
-replace 's|([0-9]) Microsoft|\1 VSCodium|' build/lib/electron.ts
+replace 's|Microsoft Corporation|Rush Automations|' build/lib/electron.ts
+replace 's|([0-9]) Microsoft|\1 Rush Automations|' build/lib/electron.ts
 
 if [[ "${OS_NAME}" == "linux" ]]; then
   # microsoft adds their apt repo to sources
@@ -267,30 +285,30 @@ if [[ "${OS_NAME}" == "linux" ]]; then
 
   # fix the packages metadata
   # code.appdata.xml
-  sed -i 's|Visual Studio Code|VSCodium|g' resources/linux/code.appdata.xml
-  sed -i 's|https://code.visualstudio.com/docs/setup/linux|https://github.com/VSCodium/vscodium#download-install|' resources/linux/code.appdata.xml
-  sed -i 's|https://code.visualstudio.com/home/home-screenshot-linux-lg.png|https://vscodium.com/img/vscodium.png|' resources/linux/code.appdata.xml
-  sed -i 's|https://code.visualstudio.com|https://vscodium.com|' resources/linux/code.appdata.xml
+  sed -i 's|Visual Studio Code|Rush|g' resources/linux/code.appdata.xml
+  sed -i 's|https://code.visualstudio.com/docs/setup/linux|https://rush-automations.com/|' resources/linux/code.appdata.xml
+  sed -i 's|https://code.visualstudio.com/home/home-screenshot-linux-lg.png|https://rush-automations.com/|' resources/linux/code.appdata.xml
+  sed -i 's|https://code.visualstudio.com|https://rush-automations.com|g' resources/linux/code.appdata.xml
 
   # control.template
-  sed -i 's|Microsoft Corporation <vscode-linux@microsoft.com>|VSCodium Team https://github.com/VSCodium/vscodium/graphs/contributors|'  resources/linux/debian/control.template
-  sed -i 's|Visual Studio Code|VSCodium|g' resources/linux/debian/control.template
-  sed -i 's|https://code.visualstudio.com/docs/setup/linux|https://github.com/VSCodium/vscodium#download-install|' resources/linux/debian/control.template
-  sed -i 's|https://code.visualstudio.com|https://vscodium.com|' resources/linux/debian/control.template
+  sed -i 's|Microsoft Corporation <vscode-linux@microsoft.com>|Rush Automations <hello@rush-automations.com>|'  resources/linux/debian/control.template
+  sed -i 's|Visual Studio Code|Rush|g' resources/linux/debian/control.template
+  sed -i 's|https://code.visualstudio.com/docs/setup/linux|https://rush-automations.com/|' resources/linux/debian/control.template
+  sed -i 's|https://code.visualstudio.com|https://rush-automations.com|g' resources/linux/debian/control.template
 
   # code.spec.template
-  sed -i 's|Microsoft Corporation|VSCodium Team|' resources/linux/rpm/code.spec.template
-  sed -i 's|Visual Studio Code Team <vscode-linux@microsoft.com>|VSCodium Team https://github.com/VSCodium/vscodium/graphs/contributors|' resources/linux/rpm/code.spec.template
-  sed -i 's|Visual Studio Code|VSCodium|' resources/linux/rpm/code.spec.template
-  sed -i 's|https://code.visualstudio.com/docs/setup/linux|https://github.com/VSCodium/vscodium#download-install|' resources/linux/rpm/code.spec.template
-  sed -i 's|https://code.visualstudio.com|https://vscodium.com|' resources/linux/rpm/code.spec.template
+  sed -i 's|Microsoft Corporation|Rush Automations|' resources/linux/rpm/code.spec.template
+  sed -i 's|Visual Studio Code Team <vscode-linux@microsoft.com>|Rush Automations <hello@rush-automations.com>|' resources/linux/rpm/code.spec.template
+  sed -i 's|Visual Studio Code|Rush|' resources/linux/rpm/code.spec.template
+  sed -i 's|https://code.visualstudio.com/docs/setup/linux|https://rush-automations.com/|' resources/linux/rpm/code.spec.template
+  sed -i 's|https://code.visualstudio.com|https://rush-automations.com|g' resources/linux/rpm/code.spec.template
 
   # snapcraft.yaml
-  sed -i 's|Visual Studio Code|VSCodium|' resources/linux/rpm/code.spec.template
+  sed -i 's|Visual Studio Code|Rush|' resources/linux/rpm/code.spec.template
 elif [[ "${OS_NAME}" == "windows" ]]; then
   # code.iss
-  sed -i 's|https://code.visualstudio.com|https://vscodium.com|' build/win32/code.iss
-  sed -i 's|Microsoft Corporation|VSCodium|' build/win32/code.iss
+  sed -i 's|https://code.visualstudio.com|https://rush-automations.com|g' build/win32/code.iss
+  sed -i 's|Microsoft Corporation|Rush Automations|' build/win32/code.iss
 fi
 
 cd ..
