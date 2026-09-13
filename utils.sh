@@ -107,23 +107,37 @@ apply_patch() {
 
 # Windows needs its dependencies installed in two stages: the packages first,
 # with `npm ci --ignore-scripts`, and their install scripts only once
-# `@vscodium/native-keymap` can read its own checksums. `npm rebuild` runs those
-# scripts, but it also re-runs this project's postinstall with
-# `npm_command=rebuild`, and that propagates `npm rebuild` to child projects
-# that have no dependencies yet ("ENOENT: scandir extensions/node_modules/
-# typescript"). Keep the two apart: the dependencies through `npm rebuild`, the
-# child projects through the postinstall itself, where an unset `npm_command`
-# means they are installed rather than rebuilt.
+# `@vscodium/native-keymap` can read its own checksums.
+#
+# `npm rebuild` runs those scripts, but it also re-runs this project's own
+# preinstall and postinstall with `npm_command=rebuild`, and both pass that
+# command on: the preinstall to `build/npm/gyp` (which is then never installed,
+# so node-gyp is missing) and the postinstall to the child projects (which are
+# then never installed, so `extensions` has no typescript). Run those two
+# separately, with `npm_command` unset so they install as they would under
+# `npm ci`, and keep the rebuild to the dependencies.
 run_npm_install_scripts() {
-  local POSTINSTALL
+  local PREINSTALL POSTINSTALL
 
+  PREINSTALL="$( node -p "require('./package.json').scripts.preinstall || ''" )"
   POSTINSTALL="$( node -p "require('./package.json').scripts.postinstall || ''" )"
+
+  # the headers that the dependencies are built against come from the preinstall
+  ( unset npm_command && node build/npm/preinstall.ts )
+
+  if [[ -n "${PREINSTALL}" ]]; then
+    npm pkg delete scripts.preinstall
+  fi
 
   if [[ -n "${POSTINSTALL}" ]]; then
     npm pkg delete scripts.postinstall
   fi
 
   npm rebuild
+
+  if [[ -n "${PREINSTALL}" ]]; then
+    npm pkg set "scripts.preinstall=${PREINSTALL}"
+  fi
 
   if [[ -n "${POSTINSTALL}" ]]; then
     npm pkg set "scripts.postinstall=${POSTINSTALL}"
