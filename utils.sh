@@ -105,6 +105,37 @@ apply_patch() {
   mv -f $1{.bak,}
 }
 
+# npm's installers unpack their prebuilt archives by calling `tar` with Windows
+# paths, and the GNU tar that Git Bash puts first in PATH reads the drive letter
+# as a remote host (`tar (child): Cannot connect to C: resolve failed`). Put the
+# bsdtar that ships with Windows in front of it, both in PATH (which beats Git
+# Bash's `/usr/bin`) and in `node_modules/.bin` (which npm prepends for the
+# install scripts it runs).
+prefer_windows_tar() {
+  local SHIM_DIR="${PWD}/.build/windows-tar"
+  local WINDOWS_TAR="${SYSTEMROOT:-/c/Windows}/System32/tar.exe"
+
+  if [[ ! -f "${WINDOWS_TAR}" ]]; then
+    WINDOWS_TAR="/c/Windows/System32/tar.exe"
+  fi
+
+  if [[ ! -f "${WINDOWS_TAR}" ]]; then
+    echo "Error: no Windows tar found to unpack the prebuilt binaries" >&2
+    return 1
+  fi
+
+  mkdir -p "${SHIM_DIR}"
+  cp "${WINDOWS_TAR}" "${SHIM_DIR}/tar.exe"
+
+  if [[ -d "node_modules/.bin" ]]; then
+    cp "${WINDOWS_TAR}" "node_modules/.bin/tar.exe"
+  fi
+
+  export PATH="${SHIM_DIR}:${PATH}"
+
+  echo "using $( command -v tar ): $( tar --version | head -n 1 )"
+}
+
 # `@vscodium/native-keymap` lists its win32 prebuilt binaries in binary mode
 # (`sha256sum -b`, so the file name is prefixed with `*`), while its installer
 # only matches plain entries. It then discards the prebuilt binary and falls

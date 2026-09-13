@@ -253,6 +253,7 @@ for i in {1..5}; do # try 5 times
 done
 
 if [[ "${OS_NAME}" == "windows" ]]; then
+  prefer_windows_tar
   fix_native_keymap_checksums
 
   npm rebuild

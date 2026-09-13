@@ -26,6 +26,7 @@ for i in {1..5}; do # try 5 times
   echo "Npm install failed $i, trying again..."
 done
 
+prefer_windows_tar
 fix_native_keymap_checksums
 
 npm rebuild
