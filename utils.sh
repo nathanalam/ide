@@ -105,6 +105,33 @@ apply_patch() {
   mv -f $1{.bak,}
 }
 
+# Windows needs its dependencies installed in two stages: the packages first,
+# with `npm ci --ignore-scripts`, and their install scripts only once
+# `@vscodium/native-keymap` can read its own checksums. `npm rebuild` runs those
+# scripts, but it also re-runs this project's postinstall with
+# `npm_command=rebuild`, and that propagates `npm rebuild` to child projects
+# that have no dependencies yet ("ENOENT: scandir extensions/node_modules/
+# typescript"). Keep the two apart: the dependencies through `npm rebuild`, the
+# child projects through the postinstall itself, where an unset `npm_command`
+# means they are installed rather than rebuilt.
+run_npm_install_scripts() {
+  local POSTINSTALL
+
+  POSTINSTALL="$( node -p "require('./package.json').scripts.postinstall || ''" )"
+
+  if [[ -n "${POSTINSTALL}" ]]; then
+    npm pkg delete scripts.postinstall
+  fi
+
+  npm rebuild
+
+  if [[ -n "${POSTINSTALL}" ]]; then
+    npm pkg set "scripts.postinstall=${POSTINSTALL}"
+
+    ( unset npm_command && node build/npm/postinstall.ts )
+  fi
+}
+
 # npm's installers unpack their prebuilt archives by calling `tar` with Windows
 # paths, and the GNU tar that Git Bash puts first in PATH reads the drive letter
 # as a remote host (`tar (child): Cannot connect to C: resolve failed`). Put the

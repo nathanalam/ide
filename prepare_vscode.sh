@@ -255,9 +255,7 @@ done
 if [[ "${OS_NAME}" == "windows" ]]; then
   prefer_windows_tar
   fix_native_keymap_checksums
-
-  npm rebuild
-  npm run postinstall
+  run_npm_install_scripts
 fi
 
 mv .npmrc.bak .npmrc
