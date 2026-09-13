@@ -299,8 +299,10 @@ echo "  Run now:       ${CLI_COMMAND}"
 
 case ":${PATH}:" in
   *":${BIN_DIR}:"*) ;;
-  *) echo
-     echo "Note: ${BIN_DIR} is not on your PATH; add it to use \`${BINARY_NAME}\` directly." ;;
+  *)
+    echo
+    echo "Note: ${BIN_DIR} is not on your PATH; add it to use \`${BINARY_NAME}\` directly."
+    ;;
 esac
 
 echo
