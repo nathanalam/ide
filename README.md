@@ -23,18 +23,19 @@ the defaults, and the release pipeline.
 
 ## Download
 
-Every target is built by GitHub Actions and published to this repository's releases.
+**[Latest release: 1.135.06162](https://github.com/nathanalam/ide/releases/latest)**
 
-| Platform | Architectures | Files |
+| Platform | Arch | Download |
 | --- | --- | --- |
-| Windows | x64, arm64 | [`RushSetup-*.exe` (system), `RushUserSetup-*.exe` (user), `Rush-win32-*.zip`](https://github.com/nathanalam/ide/releases/latest) |
-| macOS | x64 (Intel), arm64 (Apple silicon) | [`Rush-darwin-*.zip`](https://github.com/nathanalam/ide/releases/latest) |
-| Linux | x64, arm64 | [`Rush-linux-*.tar.gz`, `rush_*.deb`, `rush-*.rpm`](https://github.com/nathanalam/ide/releases/latest) |
+| macOS | Apple silicon | [Rush-darwin-arm64-1.135.06162.zip](https://github.com/nathanalam/ide/releases/download/1.135.06162/Rush-darwin-arm64-1.135.06162.zip) |
+| macOS | Intel | [Rush-darwin-x64-1.135.06162.zip](https://github.com/nathanalam/ide/releases/download/1.135.06162/Rush-darwin-x64-1.135.06162.zip) |
+| Windows | x64 | [RushUserSetup-x64-1.135.06162.exe](https://github.com/nathanalam/ide/releases/download/1.135.06162/RushUserSetup-x64-1.135.06162.exe) · [RushSetup-x64-1.135.06162.exe](https://github.com/nathanalam/ide/releases/download/1.135.06162/RushSetup-x64-1.135.06162.exe) · [Rush-win32-x64-1.135.06162.zip](https://github.com/nathanalam/ide/releases/download/1.135.06162/Rush-win32-x64-1.135.06162.zip) |
+| Windows | arm64 | [RushUserSetup-arm64-1.135.06162.exe](https://github.com/nathanalam/ide/releases/download/1.135.06162/RushUserSetup-arm64-1.135.06162.exe) · [RushSetup-arm64-1.135.06162.exe](https://github.com/nathanalam/ide/releases/download/1.135.06162/RushSetup-arm64-1.135.06162.exe) · [Rush-win32-arm64-1.135.06162.zip](https://github.com/nathanalam/ide/releases/download/1.135.06162/Rush-win32-arm64-1.135.06162.zip) |
+| Linux | x64 | [Rush-linux-x64-1.135.06162.tar.gz](https://github.com/nathanalam/ide/releases/download/1.135.06162/Rush-linux-x64-1.135.06162.tar.gz) · [rush_1.135.06162_amd64.deb](https://github.com/nathanalam/ide/releases/download/1.135.06162/rush_1.135.06162_amd64.deb) · [rush-1.135.06162-el8.x86_64.rpm](https://github.com/nathanalam/ide/releases/download/1.135.06162/rush-1.135.06162-el8.x86_64.rpm) |
+| Linux | arm64 | [Rush-linux-arm64-1.135.06162.tar.gz](https://github.com/nathanalam/ide/releases/download/1.135.06162/Rush-linux-arm64-1.135.06162.tar.gz) · [rush_1.135.06162_arm64.deb](https://github.com/nathanalam/ide/releases/download/1.135.06162/rush_1.135.06162_arm64.deb) · [rush-1.135.06162-el8.aarch64.rpm](https://github.com/nathanalam/ide/releases/download/1.135.06162/rush-1.135.06162-el8.aarch64.rpm) |
 
-:tada: **[All releases](https://github.com/nathanalam/ide/releases)** &nbsp;·&nbsp;
-**[Latest release](https://github.com/nathanalam/ide/releases/latest)** :tada:
-
-The binaries are not code-signed. On macOS, remove the quarantine flag after unzipping:
+The binaries are not code-signed. On macOS, unzip the archive, drag `Rush.app` into
+`/Applications`, then remove the quarantine flag:
 
 ```bash
 xattr -dr com.apple.quarantine /Applications/Rush.app
@@ -47,8 +48,8 @@ In-app updates are disabled, so upgrading means downloading the newer release.
 ### Releases
 
 Releases are cut from the **Release** workflow (Actions → Release → Run workflow). It resolves the
-version, creates the GitHub release, and then runs the three per-platform workflows, which upload
-their assets to it:
+version, creates the GitHub release, and then runs the per-platform workflows, which upload their
+assets to it:
 
 | Workflow | Runs on | Produces |
 | --- | --- | --- |
@@ -60,6 +61,8 @@ their assets to it:
 Each platform workflow can also be run on its own, and takes an optional version. The default is
 the upstream VS Code tag followed by the hours elapsed in the current year (for example
 `1.135.06158`), as computed by [`release_version.sh`](./release_version.sh).
+
+CI builds Windows, macOS, and Linux x64/arm64. Other Linux architectures are not built.
 
 ### Locally
 
