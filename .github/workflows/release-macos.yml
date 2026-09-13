@@ -90,7 +90,11 @@ jobs:
       - name: Clone VSCode repo
         run: ./get_repo.sh
 
+      # the build downloads prebuilt extensions from the GitHub API, which is
+      # rate limited to 60 requests per hour for unauthenticated callers
       - name: Build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./build.sh
 
       # unsigned: `prepare_assets.sh` only produces a DMG when a certificate is

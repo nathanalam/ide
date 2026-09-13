@@ -56,7 +56,8 @@ jobs:
     needs:
       - version
     runs-on: ubuntu-22.04
-    permissions: {}
+    permissions:
+      contents: read
     env:
       MS_COMMIT: ${{ needs.version.outputs.MS_COMMIT }}
       MS_TAG: ${{ needs.version.outputs.MS_TAG }}
@@ -92,7 +93,11 @@ jobs:
       - name: Clone VSCode repo
         run: ./get_repo.sh
 
+      # the build downloads prebuilt extensions from the GitHub API, which is
+      # rate limited to 60 requests per hour for unauthenticated callers
       - name: Build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./build.sh
 
       - name: Compress vscode artifact
@@ -152,6 +157,7 @@ jobs:
       - name: Package binary
         id: package
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           npm_config_arch: ${{ matrix.npm_arch }}
         run: ./build/linux/package_bin.sh
 

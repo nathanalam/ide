@@ -57,7 +57,8 @@ jobs:
     needs:
       - version
     runs-on: windows-2022
-    permissions: {}
+    permissions:
+      contents: read
     defaults:
       run:
         shell: bash
@@ -100,7 +101,11 @@ jobs:
       - name: Clone VSCode repo
         run: ./get_repo.sh
 
+      # the build downloads prebuilt extensions from the GitHub API, which is
+      # rate limited to 60 requests per hour for unauthenticated callers
       - name: Build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./build.sh
 
       - name: Compress vscode artifact
@@ -175,6 +180,7 @@ jobs:
 
       - name: Package binary
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           npm_config_arch: ${{ matrix.vscode_arch }}
           npm_config_target_arch: ${{ matrix.vscode_arch }}
         run: ./build/windows/package.sh
