@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build, package, and install the Rush-branded Linux IDE.
+# Build, package, and install the Rush-branded IDE (Linux or macOS).
 
 set -eo pipefail
 
@@ -11,11 +11,33 @@ export BINARY_NAME="${BINARY_NAME:-rush}"
 export ASSETS_REPOSITORY="${ASSETS_REPOSITORY:-rush-automations/rush}"
 export GH_REPO_PATH="${GH_REPO_PATH:-rush-automations/rush}"
 export ORG_NAME="${ORG_NAME:-Rush Automations}"
-export OS_NAME="${OS_NAME:-linux}"
 export VSCODE_QUALITY="${VSCODE_QUALITY:-stable}"
 export RELEASE_VERSION="${RELEASE_VERSION:-local}"
 
+case "$(uname -s)" in
+  Darwin) export OS_NAME="${OS_NAME:-osx}" ;;
+  *)      export OS_NAME="${OS_NAME:-linux}" ;;
+esac
+
 install_system_dependencies() {
+  if [[ "${OS_NAME}" == "osx" ]]; then
+    if ! command -v xcode-select >/dev/null 2>&1; then
+      echo "Xcode command line tools are required." >&2
+      echo "Install with: xcode-select --install" >&2
+      return 1
+    fi
+    if ! xcode-select -p >/dev/null 2>&1; then
+      echo "Xcode command line tools not found." >&2
+      echo "Install with: xcode-select --install" >&2
+      return 1
+    fi
+    if ! command -v python3 >/dev/null 2>&1; then
+      echo "Python 3 is required for the macOS build." >&2
+      return 1
+    fi
+    return 0
+  fi
+
   if ! command -v sudo >/dev/null 2>&1; then
     echo "sudo is required for automatic system dependency installation." >&2
     return 1
@@ -68,7 +90,7 @@ check_build_prerequisites() {
     current_node="$(node --version 2>/dev/null | sed 's/^v//' || true)"
 
     if [[ "${current_node}" != "${required_node}" ]]; then
-      NVM_SCRIPT="${NVM_DIR:-${HOME}/.config/nvm}/nvm.sh"
+      NVM_SCRIPT="${NVM_DIR:-${HOME}/.nvm}/nvm.sh"
       if ! type nvm >/dev/null 2>&1 && [[ -s "${NVM_SCRIPT}" ]]; then
         # shellcheck disable=SC1091
         source "${NVM_SCRIPT}"
@@ -81,40 +103,55 @@ check_build_prerequisites() {
           nvm use "${required_node}" >/dev/null
         fi
       else
-        echo "Rush requires Node.js ${required_node}; found ${current_node:-unknown}." >&2
-        echo "Install/use it with: nvm install ${required_node} && nvm use ${required_node}" >&2
-        exit 1
+        # nvm is not available; allow a newer Node.js to proceed for local
+        # builds (CI pins the exact version via setup-node).
+        local required_major="${required_node%%.*}"
+        local current_major="${current_node%%.*}"
+        if [[ "${current_major:-0}" -lt "${required_major:-0}" ]]; then
+          echo "Rush requires Node.js >= ${required_node}; found ${current_node:-unknown}." >&2
+          echo "Install the correct version with nvm or Homebrew." >&2
+          exit 1
+        fi
+        echo "Warning: Node.js ${current_node} differs from required ${required_node}; proceeding anyway."
+        export VSCODE_SKIP_NODE_VERSION_CHECK="yes"
       fi
     fi
   fi
 
-  if [[ ! -f /usr/include/gssapi/gssapi.h ]] || ! command -v krb5-config >/dev/null 2>&1 || \
-    ! command -v pkg-config >/dev/null 2>&1 || ! pkg-config --exists x11 xkbfile; then
-    echo "Installing Linux native build dependencies..."
-    install_system_dependencies || exit 1
-  fi
-
-  if [[ ! -f /usr/include/gssapi/gssapi.h ]] || ! command -v krb5-config >/dev/null 2>&1 || \
-    ! command -v pkg-config >/dev/null 2>&1 || ! pkg-config --exists x11 xkbfile; then
-    echo "Rush is missing required Linux native build dependencies (Kerberos/GSSAPI, X11, or xkbfile)." >&2
-    if command -v apt-get >/dev/null 2>&1; then
-      echo "Install them with: sudo apt-get update && sudo apt-get install -y libkrb5-dev libx11-dev libxkbfile-dev" >&2
-    elif command -v dnf >/dev/null 2>&1; then
-      echo "Install them with: sudo dnf install krb5-devel" >&2
-    elif command -v pacman >/dev/null 2>&1; then
-      echo "Install them with: sudo pacman -S krb5" >&2
+  if [[ "${OS_NAME}" == "osx" ]]; then
+    if ! command -v xcode-select >/dev/null 2>&1 || ! xcode-select -p >/dev/null 2>&1; then
+      echo "Rush requires Xcode command line tools." >&2
+      echo "Install with: xcode-select --install" >&2
+      exit 1
     fi
-    exit 1
+    if ! command -v python3 >/dev/null 2>&1; then
+      echo "Rush requires Python 3 for the macOS build." >&2
+      exit 1
+    fi
+  else
+    if [[ ! -f /usr/include/gssapi/gssapi.h ]] || ! command -v krb5-config >/dev/null 2>&1 || \
+      ! command -v pkg-config >/dev/null 2>&1 || ! pkg-config --exists x11 xkbfile; then
+      echo "Installing Linux native build dependencies..."
+      install_system_dependencies || exit 1
+    fi
+
+    if [[ ! -f /usr/include/gssapi/gssapi.h ]] || ! command -v krb5-config >/dev/null 2>&1 || \
+      ! command -v pkg-config >/dev/null 2>&1 || ! pkg-config --exists x11 xkbfile; then
+      echo "Rush is missing required Linux native build dependencies (Kerberos/GSSAPI, X11, or xkbfile)." >&2
+      if command -v apt-get >/dev/null 2>&1; then
+        echo "Install them with: sudo apt-get update && sudo apt-get install -y libkrb5-dev libx11-dev libxkbfile-dev" >&2
+      elif command -v dnf >/dev/null 2>&1; then
+        echo "Install them with: sudo dnf install krb5-devel" >&2
+      elif command -v pacman >/dev/null 2>&1; then
+        echo "Install them with: sudo pacman -S krb5" >&2
+      fi
+      exit 1
+    fi
   fi
 }
 
 if [[ $# -gt 0 ]]; then
   echo "deploy.sh takes no flags; run it as: ./deploy.sh" >&2
-  exit 2
-fi
-
-if [[ "${OS_NAME}" != "linux" ]]; then
-  echo "deploy.sh currently creates local Linux packages only (OS_NAME=${OS_NAME})." >&2
   exit 2
 fi
 
@@ -125,10 +162,14 @@ case "$(uname -m)" in
 esac
 export VSCODE_ARCH="${VSCODE_ARCH:-${HOST_ARCH}}"
 
-BUNDLE_DIR="${ROOT_DIR}/VSCode-linux-${VSCODE_ARCH}"
+if [[ "${OS_NAME}" == "osx" ]]; then
+  BUNDLE_DIR="${ROOT_DIR}/VSCode-darwin-${VSCODE_ARCH}"
+  APP_BUNDLE="${BUNDLE_DIR}/${APP_NAME}.app"
+else
+  BUNDLE_DIR="${ROOT_DIR}/VSCode-linux-${VSCODE_ARCH}"
+fi
 DIST_DIR="${ROOT_DIR}/dist"
 VERSION_LABEL="${RELEASE_VERSION%-insider}"
-TARBALL="${DIST_DIR}/Rush-${VERSION_LABEL}-linux-${VSCODE_ARCH}.tar.gz"
 
 if [[ ! -d "${BUNDLE_DIR}" ]]; then
   check_build_prerequisites
@@ -140,19 +181,119 @@ if [[ ! -d "${BUNDLE_DIR}" ]]; then
     # shellcheck disable=SC1091
     source ./get_repo.sh
     VERSION_LABEL="${RELEASE_VERSION%-insider}"
-    TARBALL="${DIST_DIR}/Rush-${VERSION_LABEL}-linux-${VSCODE_ARCH}.tar.gz"
   fi
-  echo "No Linux bundle found. Building Rush for ${VSCODE_ARCH}..."
+  echo "No bundle found. Building Rush for ${VSCODE_ARCH}..."
   export SHOULD_BUILD="yes"
   export CI_BUILD="no"
   export SHOULD_BUILD_REH="no"
   export SHOULD_BUILD_REH_WEB="no"
   export SHOULD_BUILD_CLI="no"
-  export SHOULD_BUILD_DEB="no"
-  export SHOULD_BUILD_RPM="no"
-  export SHOULD_BUILD_TAR="no"
+  if [[ "${OS_NAME}" != "osx" ]]; then
+    export SHOULD_BUILD_DEB="no"
+    export SHOULD_BUILD_RPM="no"
+    export SHOULD_BUILD_TAR="no"
+  fi
+
+  # macOS needs the custom gypi for C++20 support in native modules
+  if [[ "${OS_NAME}" == "osx" ]] && [[ -f "${ROOT_DIR}/build/osx/include.gypi" ]]; then
+    mkdir -p ~/.gyp
+    if [[ -f "${HOME}/.gyp/include.gypi" ]]; then
+      cp ~/.gyp/include.gypi ~/.gyp/include.gypi.pre-rush
+    else
+      echo "{}" > ~/.gyp/include.gypi.pre-rush
+    fi
+    cp "${ROOT_DIR}/build/osx/include.gypi" ~/.gyp/include.gypi
+  fi
+
   ./build.sh
+
+  # Restore the original gypi
+  if [[ "${OS_NAME}" == "osx" ]] && [[ -f ~/.gyp/include.gypi.pre-rush ]]; then
+    mv ~/.gyp/include.gypi.pre-rush ~/.gyp/include.gypi
+  fi
 fi
+
+# ── macOS ────────────────────────────────────────────────────────────────────
+
+if [[ "${OS_NAME}" == "osx" ]]; then
+
+  if [[ ! -d "${APP_BUNDLE}" ]]; then
+    echo "macOS app bundle not found: ${APP_BUNDLE}" >&2
+    echo "The build did not produce the expected .app bundle." >&2
+    exit 1
+  fi
+
+  # Verify the app bundle has the correct icon
+  ICON_IN_BUNDLE="${APP_BUNDLE}/Contents/Resources/code.icns"
+  ICON_IN_SRC="${ROOT_DIR}/src/stable/resources/darwin/code.icns"
+  if [[ -f "${ICON_IN_SRC}" ]]; then
+    if [[ ! -f "${ICON_IN_BUNDLE}" ]] || ! diff -q "${ICON_IN_SRC}" "${ICON_IN_BUNDLE}" >/dev/null 2>&1; then
+      echo "Fixing app icon: replacing with Rush icon..."
+      cp -f "${ICON_IN_SRC}" "${ICON_IN_BUNDLE}"
+    fi
+  fi
+
+  # Ensure the app is executable
+  chmod +x "${APP_BUNDLE}/Contents/MacOS/Electron" 2>/dev/null || true
+
+  # Remove quarantine attribute so macOS Gatekeeper does not block the app
+  xattr -cr "${APP_BUNDLE}" 2>/dev/null || true
+
+  INSTALL_DIR="/Applications"
+  APP_INSTALL_PATH="${INSTALL_DIR}/${APP_NAME}.app"
+
+  echo "Installing Rush to ${INSTALL_DIR}..."
+  if [[ -d "${APP_INSTALL_PATH}" ]]; then
+    rm -rf "${APP_INSTALL_PATH}"
+  fi
+  cp -a "${APP_BUNDLE}" "${APP_INSTALL_PATH}"
+  # Clear quarantine on the installed copy too
+  xattr -cr "${APP_INSTALL_PATH}" 2>/dev/null || true
+
+  # Set up CLI wrapper
+  BIN_DIR="${HOME}/.local/bin"
+  mkdir -p "${BIN_DIR}"
+  CLI_EXEC="${APP_INSTALL_PATH}/Contents/Resources/app/bin/${BINARY_NAME}"
+  CLI_COMMAND="${BIN_DIR}/${BINARY_NAME}"
+
+  if [[ -x "${CLI_EXEC}" ]]; then
+    rm -f "${CLI_COMMAND}"
+    cat > "${CLI_COMMAND}" <<EOF
+#!/usr/bin/env sh
+# Generated by deploy.sh - do not edit; re-run ./deploy.sh instead.
+exec "${CLI_EXEC}" "\$@"
+EOF
+    chmod +x "${CLI_COMMAND}"
+  fi
+
+  # Create a ZIP for distribution
+  mkdir -p "${DIST_DIR}"
+  ZIP_FILE="${DIST_DIR}/Rush-darwin-${VSCODE_ARCH}-${VERSION_LABEL}.zip"
+  echo "Creating distribution archive..."
+  ditto -c -k --sequesterRsrc --keepParent "${APP_INSTALL_PATH}" "${ZIP_FILE}"
+
+  echo
+  echo "Rush installed successfully."
+  echo "  App bundle:  ${APP_INSTALL_PATH}"
+  [[ -x "${CLI_COMMAND}" ]] && echo "  CLI command: ${CLI_COMMAND}"
+  echo "  Archive:     ${ZIP_FILE}"
+  echo "  Run now:     open \"${APP_INSTALL_PATH}\""
+  [[ -x "${CLI_COMMAND}" ]] && echo "  Or via CLI:  ${CLI_COMMAND}"
+
+  case ":${PATH}:" in
+    *":${BIN_DIR}:"*) ;;
+    *)
+      echo
+      echo "Note: ${BIN_DIR} is not on your PATH; add it to use \`${BINARY_NAME}\` directly."
+      ;;
+  esac
+
+  exit 0
+fi
+
+# ── Linux ────────────────────────────────────────────────────────────────────
+
+TARBALL="${DIST_DIR}/Rush-${VERSION_LABEL}-linux-${VSCODE_ARCH}.tar.gz"
 
 if [[ ! -d "${BUNDLE_DIR}" ]]; then
   echo "Linux bundle not found: ${BUNDLE_DIR}" >&2
